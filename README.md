@@ -23,8 +23,26 @@ A secure, full-stack, role-based medical portal built on **ASP.NET Core MVC (Mod
 - **Password Encryption**: Salts and hashes plain-text credentials using **BCrypt** before saving to the database.
 - **Cross-Site Scripting (XSS) & CSRF Protection**: Enforces `[ValidateAntiForgeryToken]` and HTML sanitization across forms.
 - **Cascading Deletes**: Configured via Entity Framework Fluent API to automatically purge profile extensions and files when a user account is deleted.
+## 📸 Screenshots
+
+### Landing Page
+![Landing Page](docs/landing_page.png)
+
+### Admin Control Panel
+![Admin Control Panel](docs/admin_dashboard.png)
+
+### Patient Appointment Scheduler
+![Patient Booking](docs/patient_booking.png)
+
+### Doctor Consultation Queue
+![Doctor Dashboard](docs/doctor_dashboard.png)
+
+## 🎥 Live Demo Video
+To watch the portal workflows in action (User registrations, Admin approvals, Booking conflicts, and Doctor consultation logs), watch our walkthrough:
+👉 **[Watch the Live Demo Video on YouTube](https://youtu.be/pH0B2tCFV3c)**
 
 ---
+
 
 ## 📊 System Architecture & Diagrams
 
