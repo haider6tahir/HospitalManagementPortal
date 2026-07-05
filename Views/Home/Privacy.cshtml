@@ -1,0 +1,121 @@
+@{
+    ViewData["Title"] = "Data Privacy & Security Policy";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+            <!-- Header Section -->
+            <div class="text-center mb-5">
+                <div class="d-inline-flex align-items-center justify-content-center bg-gradient text-white rounded-circle mb-3" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-color) 0%, #3b82f6 100%);">
+                    <i class="bi bi-shield-lock-fill fs-3"></i>
+                </div>
+                <h1 class="font-heading fw-bold text-gradient mb-2">Data Privacy & Security Policy</h1>
+                <p class="text-secondary">Learn how we protect your credentials, medical history, and clinical appointments.</p>
+            </div>
+
+            <!-- Main Policy Card -->
+            <div class="card glass-card border-0 p-4 p-md-5 shadow-sm">
+                <!-- Last Updated Badge -->
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-slate-100">
+                    <span class="text-muted small">Hospital Care Portal System</span>
+                    <span class="badge bg-teal-100 text-teal-800 rounded-pill px-3 py-1.5 fw-semibold small" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">
+                        Last Updated: July 2026
+                    </span>
+                </div>
+
+                <!-- Section 1: Patient Data Confidentiality -->
+                <div class="mb-5">
+                    <h4 class="font-heading fw-bold text-primary mb-3">
+                        <i class="bi bi-heart-pulse-fill me-2"></i>1. Patient Data Confidentiality
+                    </h4>
+                    <p class="text-secondary">
+                        Patient confidentiality is the cornerstone of our clinical portal. We collect and store patient medical histories, date of birth, gender, and blood group profiles for the sole purpose of enabling efficient booking and medical diagnostics.
+                    </p>
+                    <p class="text-secondary">
+                        Access to your patient records is strictly restricted to you and the specific medical practitioners (Doctors) whom you book for consultations. Administrative accounts can audit metrics but cannot inspect raw diagnostic files without authorization.
+                    </p>
+                </div>
+
+                <!-- Section 2: Cryptographic Security -->
+                <div class="mb-5">
+                    <h4 class="font-heading fw-bold text-primary mb-3">
+                        <i class="bi bi-key-fill me-2"></i>2. Cryptographic Security & Password Protection
+                    </h4>
+                    <p class="text-secondary">
+                        Our portal uses industry-standard hashing protocols to protect user credentials. Plain-text passwords are never saved in our database.
+                    </p>
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <div>
+                                <strong class="text-secondary">BCrypt Encryption:</strong> Passwords undergo salting and cryptographic hashing via the portal's security engine before storage, protecting your account from brute-force lookup checks.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Cookie & Timezone Disclosures -->
+                <div class="mb-5">
+                    <h4 class="font-heading fw-bold text-primary mb-3">
+                        <i class="bi bi-cookie me-2"></i>3. Operational Cookies & Timezone Alignment
+                    </h4>
+                    <p class="text-secondary">
+                        Our website uses a small set of functional cookies required to enable scheduling functions. We do not use third-party tracking or advertising cookies.
+                    </p>
+                    <div class="table-responsive mt-3">
+                        <table class="table table-bordered custom-table align-middle text-start mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="fw-bold">Cookie Name</th>
+                                    <th class="fw-bold">Purpose</th>
+                                    <th class="fw-bold">Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>timezoneoffset</code></td>
+                                    <td>Stores your client browser's timezone offset in minutes to ensure local scheduling matches doctor shift hours.</td>
+                                    <td>1 Year (Session Cookie)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>.AspNetCore.Cookies</code></td>
+                                    <td>Maintains your authenticated role session securely while logged in.</td>
+                                    <td>Session (Expires on logout)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 4: Data Retention & Deletion -->
+                <div class="mb-4">
+                    <h4 class="font-heading fw-bold text-primary mb-3">
+                        <i class="bi bi-trash-fill me-2"></i>4. Data Retention & Account Deletion
+                    </h4>
+                    <p class="text-secondary">
+                        You have the right to request account updates or removals. If an administrator deletes a Patient or Doctor account from the control panel:
+                    </p>
+                    <ul class="text-secondary ps-3">
+                        <li class="mb-2">All database files (Extended profile records, availabilities, and appointment histories) are purged.</li>
+                        <li class="mb-2">Any uploaded binary files (such as doctor profile pictures) are permanently deleted from the web server disk storage.</li>
+                        <li>Audit log metrics are preserved in anonymous form.</li>
+                    </ul>
+                </div>
+
+                <!-- Contact Footer -->
+                <div class="mt-5 p-4 rounded-3 text-center" style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.03) 0%, rgba(59, 130, 246, 0.03) 100%); border: 1px solid rgba(13, 148, 136, 0.1);">
+                    <h5 class="font-heading fw-bold text-secondary mb-2">Need Help with Security?</h5>
+                    <p class="text-muted small mb-0">If you have any questions regarding data safety or medical records protection, please contact the administrative helpdesk.</p>
+                </div>
+            </div>
+            
+            <!-- Back to Home -->
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-link text-decoration-none text-muted small">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Landing Page
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

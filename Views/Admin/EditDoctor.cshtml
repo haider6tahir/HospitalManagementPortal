@@ -1,0 +1,130 @@
+@model HospitalManagementPortal.Models.AdminDoctorViewModel
+@{
+    ViewData["Title"] = "Edit Doctor Details";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Edit Doctor Details</h2>
+            <p class="text-secondary mb-0">Update credentials, profile bio, and operational status for Dr. @Model.FullName.</p>
+        </div>
+        <div>
+            <a asp-action="Doctors" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-start">
+        <div class="col-lg-8">
+            <div class="card glass-card border-0 p-4 p-md-5 shadow-sm">
+                <form asp-action="EditDoctor" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ExistingImagePath" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <h5 class="font-heading fw-bold mb-3 text-primary"><i class="bi bi-person-badge me-2"></i>Account Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FullName" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="FullName" class="form-control form-control-custom" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="Email" class="form-control form-control-custom" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label text-secondary fw-medium small">Update Password (leave blank to keep current)</label>
+                            <input asp-for="Password" type="password" class="form-control form-control-custom" placeholder="••••••••" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Status" class="form-label text-secondary fw-medium small"></label>
+                            <select asp-for="Status" class="form-select form-control-custom">
+                                <option value="Approved">Approved</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.ExistingImagePath))
+                    {
+                        <div class="mb-4 d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
+                            <img src="@Model.ExistingImagePath" alt="Profile Preview" class="rounded-circle border" style="width: 70px; height: 70px; object-fit: cover;" />
+                            <div>
+                                <div class="text-secondary small fw-bold">Current Profile Photo</div>
+                                <div class="text-muted small">Will be replaced automatically if you upload a new image below.</div>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mb-4">
+                        <div class="col-md-12 mb-3">
+                            <label asp-for="ProfileImage" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="ProfileImage" type="file" class="form-control form-control-custom" accept="image/*" />
+                            <span asp-validation-for="ProfileImage" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted opacity-25">
+                    <h5 class="font-heading fw-bold mb-3 text-secondary"><i class="bi bi-file-earmark-medical me-2"></i>Clinical Credentials</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Specialization" class="form-label text-secondary fw-medium small"></label>
+                            <select asp-for="Specialization" class="form-select form-control-custom">
+                                <option value="Cardiology">Cardiology</option>
+                                <option value="Dermatology">Dermatology</option>
+                                <option value="Neurology">Neurology</option>
+                                <option value="Pediatrics">Pediatrics</option>
+                                <option value="General Medicine">General Medicine</option>
+                                <option value="Orthopedics">Orthopedics</option>
+                                <option value="Oncology">Oncology</option>
+                                <option value="Gynaecology">Gynaecology</option>
+                            </select>
+                            <span asp-validation-for="Specialization" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Qualifications" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="Qualifications" class="form-control form-control-custom" />
+                            <span asp-validation-for="Qualifications" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-2 mb-3">
+                            <label asp-for="ExperienceYears" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="ExperienceYears" class="form-control form-control-custom" type="number" min="0" max="60" />
+                            <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Biography" class="form-label text-secondary fw-medium small"></label>
+                        <textarea asp-for="Biography" rows="3" class="form-control form-control-custom"></textarea>
+                        <span asp-validation-for="Biography" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient py-2.5 px-4 rounded-pill mt-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>Save Details
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

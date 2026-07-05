@@ -1,0 +1,105 @@
+@model HospitalManagementPortal.Models.AdminPatientViewModel
+@{
+    ViewData["Title"] = "Edit Patient Info";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Edit Patient Account</h2>
+            <p class="text-secondary mb-0">Update profile details and medical history for @Model.FullName.</p>
+        </div>
+        <div>
+            <a asp-action="Patients" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-start">
+        <div class="col-lg-8">
+            <div class="card glass-card border-0 p-4 p-md-5 shadow-sm">
+                <form asp-action="EditPatient" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                    <h5 class="font-heading fw-bold mb-3 text-primary"><i class="bi bi-person me-2"></i>Account Information</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FullName" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="FullName" class="form-control form-control-custom" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="Email" class="form-control form-control-custom" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Password" class="form-label text-secondary fw-medium small">Update Password (leave blank to keep current)</label>
+                            <input asp-for="Password" type="password" class="form-control form-control-custom" placeholder="••••••••" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted opacity-25">
+                    <h5 class="font-heading fw-bold mb-3 text-secondary"><i class="bi bi-card-text me-2"></i>Personal & Medical Info</h5>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="DateOfBirth" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="DateOfBirth" class="form-control form-control-custom" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="Gender" class="form-label text-secondary fw-medium small"></label>
+                            <select asp-for="Gender" class="form-select form-control-custom">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label asp-for="BloodGroup" class="form-label text-secondary fw-medium small"></label>
+                            <select asp-for="BloodGroup" class="form-select form-control-custom">
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                            <span asp-validation-for="BloodGroup" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="MedicalHistorySummary" class="form-label text-secondary fw-medium small"></label>
+                        <textarea asp-for="MedicalHistorySummary" rows="3" class="form-control form-control-custom"></textarea>
+                        <span asp-validation-for="MedicalHistorySummary" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient py-2.5 px-4 rounded-pill mt-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>Save Details
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

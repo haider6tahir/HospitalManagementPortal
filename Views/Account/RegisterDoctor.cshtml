@@ -1,0 +1,124 @@
+@model HospitalManagementPortal.Models.DoctorRegisterViewModel
+@{
+    ViewData["Title"] = "Doctor Registration";
+}
+
+<div class="auth-wrapper py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <div class="card glass-card p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-gradient-accent text-white rounded-circle mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-file-earmark-medical-fill fs-3"></i>
+                        </div>
+                        <h2 class="text-gradient-accent font-heading mb-1">Doctor Application</h2>
+                        <p class="text-muted">Register to apply for joining our medical practitioner panel</p>
+                    </div>
+
+                    <form asp-action="RegisterDoctor" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label text-secondary fw-medium small"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 border-1.5"><i class="bi bi-person text-muted"></i></span>
+                                    <input asp-for="FullName" class="form-control form-control-custom border-start-0" placeholder="Dr. Sarah Jenkins" />
+                                </div>
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label text-secondary fw-medium small"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 border-1.5"><i class="bi bi-envelope text-muted"></i></span>
+                                    <input asp-for="Email" class="form-control form-control-custom border-start-0" placeholder="doctor@hospital.com" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label text-secondary fw-medium small"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 border-1.5"><i class="bi bi-lock text-muted"></i></span>
+                                    <input asp-for="Password" class="form-control form-control-custom border-start-0" placeholder="Min 6 characters" />
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label text-secondary fw-medium small"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0 border-1.5"><i class="bi bi-lock-fill text-muted"></i></span>
+                                    <input asp-for="ConfirmPassword" class="form-control form-control-custom border-start-0" placeholder="Confirm password" />
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 text-muted opacity-25">
+                        <h5 class="font-heading mb-3 text-secondary">Professional Credentials</h5>
+
+                        <div class="row">
+                            <div class="col-md-5 mb-3">
+                                <label asp-for="Specialization" class="form-label text-secondary fw-medium small"></label>
+                                <select asp-for="Specialization" class="form-select form-control-custom">
+                                    <option value="">Select Specialization</option>
+                                    <option value="Cardiology">Cardiology</option>
+                                    <option value="Dermatology">Dermatology</option>
+                                    <option value="Neurology">Neurology</option>
+                                    <option value="Pediatrics">Pediatrics</option>
+                                    <option value="General Medicine">General Medicine</option>
+                                    <option value="Orthopedics">Orthopedics</option>
+                                    <option value="Oncology">Oncology</option>
+                                    <option value="Gynaecology">Gynaecology</option>
+                                </select>
+                                <span asp-validation-for="Specialization" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-5 mb-3">
+                                <label asp-for="Qualifications" class="form-label text-secondary fw-medium small"></label>
+                                <input asp-for="Qualifications" class="form-control form-control-custom" placeholder="e.g. MBBS, MD, FRCP" />
+                                <span asp-validation-for="Qualifications" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-2 mb-3">
+                                <label asp-for="ExperienceYears" class="form-label text-secondary fw-medium small"></label>
+                                <input asp-for="ExperienceYears" class="form-control form-control-custom" type="number" min="0" max="60" />
+                                <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Biography" class="form-label text-secondary fw-medium small"></label>
+                            <textarea asp-for="Biography" rows="3" class="form-control form-control-custom" placeholder="Brief statement about your clinical focus, background, research interests, or hospital affiliations..."></textarea>
+                            <span asp-validation-for="Biography" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ProfileImage" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="ProfileImage" type="file" class="form-control form-control-custom" accept="image/*" />
+                            <span asp-validation-for="ProfileImage" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <a asp-action="Login" class="text-decoration-none text-muted small"><i class="bi bi-arrow-left me-1"></i> Back to login</a>
+                            <button type="submit" class="btn btn-gradient-secondary py-2 px-4">
+                                <i class="bi bi-send-fill me-2"></i>Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

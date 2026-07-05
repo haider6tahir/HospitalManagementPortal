@@ -1,0 +1,203 @@
+@{
+    ViewData["Title"] = "Patient Dashboard";
+    var appointments = ViewBag.Appointments as List<HospitalManagementPortal.Models.Appointment>;
+    var notifications = ViewBag.Notifications as List<HospitalManagementPortal.Models.Notification>;
+    var nextApp = ViewBag.NextAppointment as HospitalManagementPortal.Models.Appointment;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Welcome, @ViewBag.PatientName</h2>
+            <p class="text-secondary mb-0">Track your appointment bookings, find specialists, and check clinic updates.</p>
+        </div>
+        <div>
+            <a asp-action="BookAppointment" class="btn btn-gradient rounded-pill px-4">
+                <i class="bi bi-calendar-plus me-2"></i>Book Appointment
+            </a>
+        </div>
+    </div>
+
+    <!-- Next Appointment Alert Box -->
+    @if (nextApp != null)
+    {
+        <div class="card border-0 bg-gradient-primary text-white p-4 rounded-3 shadow-sm mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-8 mb-3 mb-md-0">
+                    <div class="small text-white-50 text-uppercase fw-bold tracking-wider mb-1"><i class="bi bi-clock me-1"></i> Upcoming Consultation</div>
+                    <h3 class="font-heading fw-bold mb-1">Appointment with Dr. @nextApp.Doctor.User.FullName</h3>
+                    <p class="mb-0 text-white-50 small">Specialty: <strong>@nextApp.Doctor.Specialization</strong> | Scheduled for <strong>@nextApp.AppointmentDate.ToString("f")</strong></p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="badge bg-white text-teal-800 rounded-pill px-3 py-2 fw-semibold">
+                        <i class="bi bi-calendar-check me-1"></i> Approved Slot
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Stats row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card bg-gradient-accent" style="filter: grayscale(0.2) opacity(0.85);">
+                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-num">@ViewBag.PendingRequestsCount</div>
+                <div class="stat-label">Pending Bookings</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-gradient-primary">
+                <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+                <div class="stat-num">@ViewBag.ApprovedRequestsCount</div>
+                <div class="stat-label">Approved Appointments</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-gradient-accent" style="filter: hue-rotate(180deg) brightness(0.85);">
+                <div class="stat-icon"><i class="bi bi-calendar-x"></i></div>
+                <div class="stat-num">@ViewBag.RejectedRequestsCount</div>
+                <div class="stat-label">Rejected Requests</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Appointment History -->
+        <div class="col-lg-8">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-calendar3 text-primary me-2"></i>My Appointment Logs</h5>
+                
+                @if (appointments == null || !appointments.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar3 fs-1 text-muted"></i>
+                        <p class="text-secondary small mt-2">You haven't booked any appointments yet.</p>
+                        <a asp-action="BookAppointment" class="btn btn-outline-custom btn-sm mt-3">Book Your First Appointment</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table custom-table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Doctor Name</th>
+                                    <th>Appointment Date</th>
+                                    <th>Symptoms</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in appointments)
+                                {
+                                    string statusBadgeClass = app.Status switch
+                                    {
+                                        "Approved" => "bg-success",
+                                        "Rejected" => "bg-danger",
+                                        _ => "bg-warning text-dark"
+                                    };
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-primary">Dr. @app.Doctor.User.FullName</div>
+                                            <div class="badge bg-teal-100 text-teal-800" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">@app.Doctor.Specialization</div>
+                                        </td>
+                                        <td class="small">
+                                            <div class="fw-medium">@app.AppointmentDate.ToString("dd MMM yyyy")</div>
+                                            <div class="text-muted">@app.AppointmentDate.ToString("hh:mm tt")</div>
+                                        </td>
+                                        <td>
+                                            <div class="text-muted small text-truncate" style="max-width: 150px;" title="@app.SymptomDescription">@app.SymptomDescription</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @statusBadgeClass rounded-pill px-3 py-1.5 small">@app.Status</span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(app.ConsultationNotes))
+                                            {
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#viewNotesModal-@app.Id">
+                                                    <i class="bi bi-journal-text me-1"></i>View Notes
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">Not conducted yet.</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Recent Alerts -->
+        <div class="col-lg-4">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="font-heading fw-bold mb-0"><i class="bi bi-bell text-secondary me-2"></i>Recent Alerts</h5>
+                    <a asp-action="Notifications" class="text-decoration-none small fw-semibold text-gradient">View All</a>
+                </div>
+                
+                @if (notifications == null || !notifications.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell-slash fs-2 text-muted"></i>
+                        <p class="text-secondary small mt-2">No alerts yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var note in notifications)
+                        {
+                            <div class="list-group-item bg-transparent px-0 py-3 @(note.IsRead ? "" : "border-start border-3 border-teal-500 ps-2")">
+                                <p class="mb-1 small text-dark">@note.Message</p>
+                                <div class="text-muted" style="font-size: 0.75rem;">@note.CreatedAt.ToString("g")</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (appointments != null && appointments.Any(a => !string.IsNullOrEmpty(a.ConsultationNotes)))
+{
+    @foreach (var app in appointments.Where(a => !string.IsNullOrEmpty(a.ConsultationNotes)))
+    {
+        <!-- Notes View Modal -->
+        <div class="modal fade" id="viewNotesModal-@app.Id" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header border-0 bg-light p-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                        <h5 class="modal-title font-heading fw-bold">Consultation Summary</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-start">
+                        <div class="mb-3">
+                            <div class="small text-secondary fw-semibold">ATTENDING DOCTOR</div>
+                            <div class="fw-bold">Dr. @app.Doctor.User.FullName</div>
+                            <div class="text-muted small">@app.Doctor.Specialization (@app.Doctor.Qualifications)</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="small text-secondary fw-semibold">CONSULTATION DATE</div>
+                            <div class="fw-medium text-dark">@app.AppointmentDate.ToString("f")</div>
+                        </div>
+                        <div class="mb-3 bg-light p-3 rounded-3 border">
+                            <div class="small text-secondary fw-semibold mb-1">CLINICAL ADVICE & DIAGNOSIS</div>
+                            <div class="small text-dark mt-1" style="white-space: pre-line;">@app.ConsultationNotes</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4 bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-gradient rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

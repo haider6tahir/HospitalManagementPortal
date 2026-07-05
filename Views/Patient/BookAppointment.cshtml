@@ -1,0 +1,238 @@
+@model IEnumerable<HospitalManagementPortal.Models.DoctorProfile>
+@{
+    ViewData["Title"] = "Book Appointment";
+    var specialities = ViewBag.Specialities as List<string>;
+    var selectedSpecialty = ViewBag.SelectedSpecialty as string;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Book Consultation</h2>
+            <p class="text-secondary mb-0">Search doctors, check schedules, and request clinical slots.</p>
+        </div>
+        <div>
+            <a asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Search/Filter Filter -->
+    <div class="card glass-card border-0 p-3 shadow-sm mb-4">
+        <form method="get" asp-action="BookAppointment" class="row align-items-center g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <select name="specialty" class="form-select form-control-custom border-start-0" onchange="this.form.submit()">
+                        <option value="">All Specializations</option>
+                        @if (specialities != null)
+                        {
+                            @foreach (var spec in specialities)
+                            {
+                                if (spec == selectedSpecialty)
+                                {
+                                    <option value="@spec" selected>@spec</option>
+                                }
+                                else
+                                {
+                                    <option value="@spec">@spec</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="BookAppointment" class="btn btn-outline-secondary btn-sm w-100 py-2 rounded-pill">Reset Filter</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Doctor Grid & Scheduler Form -->
+    <div class="row g-4">
+        <!-- Doctors List Column -->
+        <div class="col-lg-7">
+            <h5 class="font-heading fw-bold mb-3">Available Specialists</h5>
+            
+            @if (Model == null || !Model.Any())
+            {
+                <div class="card glass-card p-5 text-center shadow-sm">
+                    <i class="bi bi-person-slash fs-1 text-muted"></i>
+                    <p class="text-secondary mt-3">No active doctors match the selected specialization filter.</p>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var doc in Model)
+                    {
+                        <div class="col-md-12">
+                            <div class="card glass-card p-4 border-0 shadow-sm">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-sm-2 text-center">
+                                        @if (!string.IsNullOrEmpty(doc.ProfilePicturePath))
+                                        {
+                                            <img src="@doc.ProfilePicturePath" alt="Dr. @doc.User.FullName" class="rounded-circle border" style="width: 65px; height: 65px; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center border" style="width: 65px; height: 65px;">
+                                                <i class="bi bi-person-badge-fill fs-2 text-primary"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-sm-7">
+                                        <h5 class="font-heading fw-bold mb-1">Dr. @doc.User.FullName</h5>
+                                        <p class="text-secondary small mb-2">Qualifications: <strong>@doc.Qualifications</strong> | Exp: <strong>@doc.ExperienceYears years</strong></p>
+                                        <span class="badge bg-teal-100 text-teal-800" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">@doc.Specialization</span>
+                                        <p class="text-muted small mt-2 mb-0 text-truncate" style="max-width: 400px;" title="@doc.Biography">@doc.Biography</p>
+                                    </div>
+                                    <div class="col-sm-3 text-center text-sm-end">
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-gradient-secondary btn-sm rounded-pill" onclick="checkSchedule(@doc.Id)">
+                                                <i class="bi bi-clock me-1"></i>Hours List
+                                            </button>
+                                            <button type="button" class="btn btn-gradient btn-sm rounded-pill" onclick="selectDoctorForBooking(@doc.Id, '@doc.User.FullName', '@doc.Specialization')">
+                                                Select
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Appointment Form Column -->
+        <div class="col-lg-5">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100 sticky-top" style="top: 20px;">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-calendar-event text-primary me-2"></i>Booking Details</h5>
+                
+                <div id="noDoctorSelectedAlert" class="text-center py-5 border border-dashed rounded-3">
+                    <i class="bi bi-hand-index fs-1 text-muted"></i>
+                    <p class="text-secondary small mt-2">Select a doctor from the list to start booking.</p>
+                </div>
+
+                <form id="bookingForm" asp-action="CreateAppointment" method="post" style="display: none;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="selectedDoctorId" name="doctorId" />
+                    
+                    <div class="mb-3 p-3 bg-light rounded-3 border">
+                        <div class="small text-secondary fw-semibold">SELECTED SPECIALIST</div>
+                        <h6 class="fw-bold mb-0 text-primary mt-1" id="bookingDoctorName">Dr. Name</h6>
+                        <span class="badge bg-teal-100 text-teal-800 mt-1" id="bookingDoctorSpecialty" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">Specialization</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Appointment Date & Time</label>
+                        <input name="appointmentDate" type="datetime-local" class="form-control form-control-custom" min="@(((DateTime?)ViewBag.PatientLocalTime ?? DateTime.Now).ToString("yyyy-MM-ddTHH:mm"))" required />
+                        <span class="text-muted small" style="font-size: 0.8rem;">Please schedule matching the doctor's weekly active hours.</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium">Symptoms / Reason for Visit</label>
+                        <textarea name="symptoms" rows="4" class="form-control form-control-custom" placeholder="Briefly describe your symptoms or reason for consulting the doctor..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 py-2.5">
+                        <i class="bi bi-check-circle me-2"></i>Confirm Booking Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor Hours Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+            <div class="modal-header border-0 bg-light p-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <div>
+                    <h5 class="modal-title font-heading fw-bold" id="scheduleModalDoctorName">Dr. Name</h5>
+                    <span class="badge bg-teal-100 text-teal-800 mt-1" id="scheduleModalSpecialty" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">Specialization</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-start">
+                <h6 class="font-heading fw-bold mb-3"><i class="bi bi-calendar3-range text-secondary me-2"></i>Weekly Working Hours</h6>
+                <div id="scheduleModalContent">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-gradient rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function checkSchedule(doctorId) {
+            fetch(`/Patient/GetDoctorSchedule?doctorId=${doctorId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('scheduleModalDoctorName').innerText = "Dr. " + data.doctorName;
+                    document.getElementById('scheduleModalSpecialty').innerText = data.specialization;
+                    
+                    const contentDiv = document.getElementById('scheduleModalContent');
+                    contentDiv.innerHTML = '';
+                    
+                    if (data.schedule.length === 0) {
+                        contentDiv.innerHTML = `
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-calendar-x fs-3"></i>
+                                <p class="small mt-2 mb-0">No active operational hours schedule has been set by this doctor.</p>
+                            </div>
+                        `;
+                    } else {
+                        let html = '<div class="list-group">';
+                        data.schedule.forEach(slot => {
+                            html += `
+                                <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-0 border-bottom">
+                                    <span class="fw-semibold">${slot.day}</span>
+                                    <span class="badge bg-light text-dark border">${slot.start} to ${slot.end}</span>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        contentDiv.innerHTML = html;
+                    }
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error fetching doctor schedule:', error);
+                });
+        }
+
+        function selectDoctorForBooking(doctorId, doctorName, specialization) {
+            document.getElementById('noDoctorSelectedAlert').style.display = 'none';
+            
+            document.getElementById('selectedDoctorId').value = doctorId;
+            document.getElementById('bookingDoctorName').innerText = "Dr. " + doctorName;
+            document.getElementById('bookingDoctorSpecialty').innerText = specialization;
+            
+            document.getElementById('bookingForm').style.display = 'block';
+            
+            // Scroll to form on mobile devices
+            if (window.innerWidth < 992) {
+                document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+}

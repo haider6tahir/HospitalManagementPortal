@@ -1,0 +1,169 @@
+@{
+    ViewData["Title"] = "Welcome";
+}
+
+<!-- Hero Section -->
+<div class="position-relative overflow-hidden py-5 mb-5" style="background: radial-gradient(circle at 80% 20%, rgba(217, 249, 244, 0.5) 0%, rgba(224, 242, 254, 0.4) 100%);">
+    <div class="container py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="badge bg-teal-100 text-teal-800 border border-teal-200 px-3 py-2 rounded-pill mb-3 fw-semibold small" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">
+                    <i class="bi bi-shield-check me-1"></i> Secure Digital Care
+                </div>
+                <h1 class="display-4 font-heading fw-bold mb-3 lh-sm text-gradient">
+                    Your Health, <br>Our Priority.
+                </h1>
+                <p class="lead text-secondary mb-4">
+                    Welcome to the Hospital Management Portal. Manage appointments, communicate with specialists, and access your medical history with our secure, role-based platform.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-gradient rounded-pill px-4 py-3 shadow-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Access Portal
+                    </a>
+                    <a asp-controller="Account" asp-action="RegisterPatient" class="btn btn-outline-custom rounded-pill px-4 py-3">
+                        <i class="bi bi-person-plus me-2"></i>Register Patient
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <!-- Visual Card Layout simulating hospital operations -->
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card glass-card p-4 text-start border-0 shadow-sm" style="background: rgba(255, 255, 255, 0.9);">
+                            <span class="fs-1 text-gradient mb-2"><i class="bi bi-heart-pulse-fill"></i></span>
+                            <h6 class="font-heading mb-1 fw-bold">Specialized Care</h6>
+                            <p class="small text-muted mb-0">Direct bookings with board-certified consultants.</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card glass-card p-4 text-start border-0 shadow-sm" style="background: rgba(255, 255, 255, 0.9);">
+                            <span class="fs-1 text-gradient-accent mb-2"><i class="bi bi-calendar-check-fill"></i></span>
+                            <h6 class="font-heading mb-1 fw-bold">Easy Scheduling</h6>
+                            <p class="small text-muted mb-0">Select availability and check status in real-time.</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card glass-card p-4 text-start border-0 shadow-sm" style="background: rgba(255, 255, 255, 0.9);">
+                            <span class="fs-1 text-gradient-accent mb-2"><i class="bi bi-shield-lock-fill"></i></span>
+                            <h6 class="font-heading mb-1 fw-bold">Secure Logs</h6>
+                            <p class="small text-muted mb-0">Hashed records & role-based authentication rules.</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card glass-card p-4 text-start border-0 shadow-sm" style="background: rgba(255, 255, 255, 0.9);">
+                            <span class="fs-1 text-gradient mb-2"><i class="bi bi-envelope-check-fill"></i></span>
+                            <h6 class="font-heading mb-1 fw-bold">Email Alerts</h6>
+                            <p class="small text-muted mb-0">Automated notifications on status updates.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Bar Section -->
+<div class="container mb-5">
+    <div class="card glass-card border-0 shadow-sm p-4">
+        <div class="row g-4 text-center">
+            <div class="col-md-4 border-end border-1.5 border-slate-100">
+                <h2 class="stat-num text-gradient mb-0">@ViewBag.TotalDoctors</h2>
+                <div class="text-secondary small fw-semibold text-uppercase tracking-wider">Active Specialist Doctors</div>
+            </div>
+            <div class="col-md-4 border-end border-1.5 border-slate-100">
+                <h2 class="stat-num text-gradient-accent mb-0">@ViewBag.TotalPatients</h2>
+                <div class="text-secondary small fw-semibold text-uppercase tracking-wider">Registered Patients</div>
+            </div>
+            <div class="col-md-4">
+                <h2 class="stat-num text-gradient mb-0">@ViewBag.TotalAppointments</h2>
+                <div class="text-secondary small fw-semibold text-uppercase tracking-wider">Consultations Conducted</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Services / Features Section -->
+<div id="services" class="container py-5 mb-5">
+    <div class="text-center mb-5">
+        <h2 class="font-heading fw-bold text-gradient">Integrated Portal Features</h2>
+        <p class="text-secondary col-lg-6 mx-auto">Digitized hospital workflows supporting role-based dashboards, approval gates, and clinical management.</p>
+    </div>
+    
+    <div class="row g-4 justify-content-center">
+        <!-- Patient Panel -->
+        <div class="col-md-4">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm text-center">
+                <div class="rounded-circle bg-teal-50 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; background: rgba(13, 148, 136, 0.05);">
+                    <i class="bi bi-person-fill text-teal-600 fs-2" style="color: var(--primary-color);"></i>
+                </div>
+                <h4 class="font-heading fw-semibold mb-2">Patients</h4>
+                <p class="text-muted small">Search doctors by specializations, filter calendar slots, request appointment bookings, and track booking approvals directly.</p>
+                <a asp-controller="Account" asp-action="RegisterPatient" class="text-teal-600 fw-semibold small text-decoration-none mt-auto" style="color: var(--primary-color);">Register Patient <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+        
+        <!-- Doctor Panel -->
+        <div class="col-md-4">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm text-center">
+                <div class="rounded-circle bg-blue-50 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; background: rgba(59, 130, 246, 0.05);">
+                    <i class="bi bi-file-earmark-medical text-blue-600 fs-2" style="color: #3b82f6;"></i>
+                </div>
+                <h4 class="font-heading fw-semibold mb-2">Doctors</h4>
+                <p class="text-muted small">Register details, manage weekly scheduling templates, consult upcoming patient lists, and add diagnostic notes.</p>
+                <a asp-controller="Account" asp-action="RegisterDoctor" class="text-blue-600 fw-semibold small text-decoration-none mt-auto" style="color: #3b82f6;">Join Doctor Panel <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+        
+        <!-- Admin Panel -->
+        <div class="col-md-4">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm text-center">
+                <div class="rounded-circle bg-purple-50 d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; background: rgba(139, 92, 246, 0.05);">
+                    <i class="bi bi-shield-lock text-purple-600 fs-2" style="color: #8b5cf6;"></i>
+                </div>
+                <h4 class="font-heading fw-semibold mb-2">Administrators</h4>
+                <p class="text-muted small">Approve doctor sign-ups, monitor registrations, inspect patient accounts, oversee appointments, and audit analytics metrics.</p>
+                <a asp-controller="Account" asp-action="Login" class="text-purple-600 fw-semibold small text-decoration-none mt-auto" style="color: #8b5cf6;">Sign In as Admin <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Us Section -->
+<div id="about" class="container py-5 mb-5 border-top border-slate-100 pt-5">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+            <h2 class="font-heading fw-bold mb-3 text-gradient">About Hospital Care</h2>
+            <p class="text-secondary mb-4 lead">
+                Hospital Care is a modern digital health initiative designed to bridge the gap between patients and healthcare professionals. Established with the vision of streamlining clinical administration, our platform ensures secure account management, transparent scheduling, and verified doctor applications.
+            </p>
+            <p class="text-secondary">
+                We are committed to delivering secure, efficient, and role-based clinical tools. Through strict compliance with medical confidentiality standards and modern security measures (including secure password hashing and encryption), we guarantee the safety of your personal and medical records.
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <div class="card glass-card p-4 border-0 shadow-sm">
+                <h5 class="font-heading fw-bold text-primary mb-3"><i class="bi bi-award me-2 text-primary"></i>Our Core Values</h5>
+                <ul class="list-unstyled mb-0">
+                    <li class="d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-shield-fill-check text-success fs-5"></i>
+                        <div>
+                            <strong>Patient Privacy:</strong> Encrypted databases and secure access rules protecting patient record integrity.
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-clock-fill text-info fs-5"></i>
+                        <div>
+                            <strong>Scheduling Clarity:</strong> Real-time timezone and shift hour checks preventing booking overlaps.
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start gap-2">
+                        <i class="bi bi-people-fill text-primary fs-5"></i>
+                        <div>
+                            <strong>Verified Staff:</strong> Administrative screening pipelines to audit and authorize medical practitioners.
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

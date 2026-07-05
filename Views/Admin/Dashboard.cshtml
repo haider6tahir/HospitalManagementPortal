@@ -1,0 +1,345 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var pendingDoctors = ViewBag.PendingDoctors as List<HospitalManagementPortal.Models.DoctorProfile>;
+    var pendingAppointments = ViewBag.PendingAppointments as List<HospitalManagementPortal.Models.Appointment>;
+    var recentActivity = ViewBag.RecentActivity as List<HospitalManagementPortal.Models.Notification>;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Administrative Center</h2>
+            <p class="text-secondary mb-0">System performance, statistics, and approval queues.</p>
+        </div>
+        <div class="text-secondary small fw-medium">
+            <i class="bi bi-calendar3 me-1"></i> Today is: @DateTime.Today.ToString("dd MMMM yyyy")
+        </div>
+    </div>
+
+    <!-- Stats row 1 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-primary">
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-num">@ViewBag.TotalPatients</div>
+                <div class="stat-label">Total Patients</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-accent">
+                <div class="stat-icon"><i class="bi bi-heart-pulse"></i></div>
+                <div class="stat-num">@ViewBag.TotalDoctors</div>
+                <div class="stat-label">Total Doctors</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-primary" style="filter: hue-rotate(45deg);">
+                <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
+                <div class="stat-num">@ViewBag.AvailableDoctorsToday</div>
+                <div class="stat-label">Doctors Available Today</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-accent" style="filter: hue-rotate(-50deg);">
+                <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+                <div class="stat-num">@ViewBag.PendingDoctorApprovals</div>
+                <div class="stat-label">Pending Doctor Approvals</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats row 2 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-primary" style="filter: saturate(1.2) brightness(0.9);">
+                <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
+                <div class="stat-num">@ViewBag.TodayAppointments</div>
+                <div class="stat-label">Today's Appointments</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-accent" style="filter: grayscale(0.2) opacity(0.85);">
+                <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-num">@ViewBag.PendingAppointmentsCount</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-primary" style="filter: hue-rotate(90deg) brightness(0.95);">
+                <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-num">@ViewBag.ApprovedAppointmentsCount</div>
+                <div class="stat-label">Approved Requests</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-gradient-accent" style="filter: hue-rotate(180deg) brightness(0.85);">
+                <div class="stat-icon"><i class="bi bi-x-circle"></i></div>
+                <div class="stat-num">@ViewBag.RejectedAppointmentsCount</div>
+                <div class="stat-label">Rejected Requests</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphs Section -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-graph-up me-2"></i>System Operations Summary</h5>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="systemChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-pie-chart me-2"></i>Appointments Status</h5>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="appointmentsPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approvals & Activity row -->
+    <div class="row g-4 mb-4">
+        <!-- Pending Doctors Queue -->
+        <div class="col-xl-6">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-person-badge-fill text-primary me-2"></i>Pending Doctor Applications (@pendingDoctors?.Count)</h5>
+                
+                @if (pendingDoctors == null || !pendingDoctors.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-check2-all fs-1 text-muted"></i>
+                        <p class="text-secondary small mt-2">All doctor registration applications have been reviewed.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table custom-table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Specialization</th>
+                                    <th>Exp.</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var doc in pendingDoctors)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-primary">@doc.User.FullName</div>
+                                            <div class="text-muted small">@doc.User.Email</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-teal-100 text-teal-800" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">@doc.Specialization</span>
+                                            <div class="text-muted small mt-1">@doc.Qualifications</div>
+                                        </td>
+                                        <td>@doc.ExperienceYears Yrs</td>
+                                        <td>
+                                            <div class="d-flex gap-1 justify-content-end">
+                                                <form asp-action="ApproveDoctor" asp-route-id="@doc.Id" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">Approve</button>
+                                                </form>
+                                                <form asp-action="RejectDoctor" asp-route-id="@doc.Id" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">Reject</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Pending Appointments Queue -->
+        <div class="col-xl-6">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-calendar3-event text-primary me-2"></i>Pending Appointment Bookings (@pendingAppointments?.Count)</h5>
+                
+                @if (pendingAppointments == null || !pendingAppointments.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-check fs-1 text-muted"></i>
+                        <p class="text-secondary small mt-2">No pending appointments in queue.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table custom-table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in pendingAppointments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">@app.Patient.User.FullName</div>
+                                            <div class="text-muted small">@app.SymptomDescription</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-medium text-secondary">@app.Doctor.User.FullName</div>
+                                            <div class="text-muted small">@app.Doctor.Specialization</div>
+                                        </td>
+                                        <td class="small">
+                                            <div>@app.AppointmentDate.ToString("dd MMM yyyy")</div>
+                                            <div class="text-muted">@app.AppointmentDate.ToString("hh:mm tt")</div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1 justify-content-end">
+                                                <form asp-action="ApproveAppointment" asp-route-id="@app.Id" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-success btn-sm rounded-circle p-1" title="Approve"><i class="bi bi-check fs-5 d-block"></i></button>
+                                                </form>
+                                                <form asp-action="RejectAppointment" asp-route-id="@app.Id" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle p-1" title="Reject"><i class="bi bi-x fs-5 d-block"></i></button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Logs timeline -->
+    <div class="card glass-card border-0 p-4 shadow-sm mb-4">
+        <h5 class="font-heading fw-bold mb-3"><i class="bi bi-activity text-secondary me-2"></i>Recent System Activity</h5>
+        
+        @if (recentActivity == null || !recentActivity.Any())
+        {
+            <p class="text-secondary small mb-0">No system events logged yet.</p>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-md-12">
+                    @foreach (var log in recentActivity)
+                    {
+                        string borderClass = "";
+                        if (log.Message.Contains("approved", StringComparison.OrdinalIgnoreCase)) borderClass = "approved";
+                        else if (log.Message.Contains("rejected", StringComparison.OrdinalIgnoreCase) || log.Message.Contains("declined", StringComparison.OrdinalIgnoreCase)) borderClass = "rejected";
+                        
+                        <div class="activity-item @borderClass">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="fw-medium text-dark">@log.Message</div>
+                                <div class="text-muted small">@log.CreatedAt.ToString("g")</div>
+                            </div>
+                            <div class="text-muted small mt-1">Logged for User ID: @log.UserId (@log.User?.FullName)</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Data variables passed from controller ViewBags
+            const totalPatients = @ViewBag.TotalPatients;
+            const totalDoctors = @ViewBag.TotalDoctors;
+            const pendingDoctors = @ViewBag.PendingDoctorApprovals;
+            const todayAppointments = @ViewBag.TodayAppointments;
+            
+            const pendingAppts = @ViewBag.PendingAppointmentsCount;
+            const approvedAppts = @ViewBag.ApprovedAppointmentsCount;
+            const rejectedAppts = @ViewBag.RejectedAppointmentsCount;
+
+            // System Chart
+            const ctxSystem = document.getElementById('systemChart').getContext('2d');
+            new Chart(ctxSystem, {
+                type: 'bar',
+                data: {
+                    labels: ['Registered Patients', 'Approved Doctors', 'Pending Doctors', 'Today\'s Agenda'],
+                    datasets: [{
+                        label: 'Counts',
+                        data: [totalPatients, totalDoctors, pendingDoctors, todayAppointments],
+                        backgroundColor: [
+                            'rgba(13, 148, 136, 0.7)',
+                            'rgba(6, 182, 212, 0.7)',
+                            'rgba(244, 63, 94, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(13, 148, 136)',
+                            'rgb(6, 182, 212)',
+                            'rgb(244, 63, 94)',
+                            'rgb(139, 92, 246)'
+                        ],
+                        borderWidth: 1.5,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Appointments Doughnut Chart
+            const ctxAppts = document.getElementById('appointmentsPieChart').getContext('2d');
+            new Chart(ctxAppts, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending', 'Approved', 'Rejected'],
+                    datasets: [{
+                        data: [pendingAppts, approvedAppts, rejectedAppts],
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.75)', /* Amber */
+                            'rgba(16, 185, 129, 0.75)', /* Emerald */
+                            'rgba(239, 68, 68, 0.75)'  /* Red */
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 15 }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        });
+    </script>
+}

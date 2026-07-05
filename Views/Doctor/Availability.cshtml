@@ -1,0 +1,133 @@
+@model IEnumerable<HospitalManagementPortal.Models.Availability>
+@{
+    ViewData["Title"] = "Manage Availability Hours";
+    
+    string GetDayOfWeekName(int dayOfWeek)
+    {
+        return dayOfWeek switch
+        {
+            0 => "Sunday",
+            1 => "Monday",
+            2 => "Tuesday",
+            3 => "Wednesday",
+            4 => "Thursday",
+            5 => "Friday",
+            6 => "Saturday",
+            _ => "Unknown"
+        };
+    }
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Weekly Availability Schedule</h2>
+            <p class="text-secondary mb-0">Set your standard operational hours for appointments.</p>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 rounded-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Add Hours Form -->
+        <div class="col-lg-4">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-calendar-plus text-primary me-2"></i>Add Availability Slot</h5>
+                
+                <form asp-action="AddAvailability" method="post">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Day of the Week</label>
+                        <select name="dayOfWeek" class="form-select form-control-custom" required>
+                            <option value="">Select Day</option>
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                            <option value="0">Sunday</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-medium">Shift Start Time</label>
+                        <input name="startTime" type="time" class="form-control form-control-custom" required />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-medium">Shift End Time</label>
+                        <input name="endTime" type="time" class="form-control form-control-custom" required />
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 py-2.5">
+                        <i class="bi bi-plus-circle me-2"></i>Add Time Block
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Schedule List -->
+        <div class="col-lg-8">
+            <div class="card glass-card border-0 p-4 shadow-sm h-100">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-clock-history text-secondary me-2"></i>Active Time Slots</h5>
+                
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-calendar-x fs-1 text-muted"></i>
+                        <p class="text-secondary small mt-2">No active availability slots found. Patients won't be able to book you today.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table custom-table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Shift Hours</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var slot in Model)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold text-primary">@GetDayOfWeekName(slot.DayOfWeek)</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi bi-clock text-secondary small"></i>
+                                                <span>
+                                                    @DateTime.Today.Add(slot.StartTime).ToString("hh:mm tt") 
+                                                    to 
+                                                    @DateTime.Today.Add(slot.EndTime).ToString("hh:mm tt")
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="text-end">
+                                            <form asp-action="RemoveAvailability" asp-route-id="@slot.Id" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                                    <i class="bi bi-trash3 me-1"></i>Remove
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,50 @@
+@model IEnumerable<HospitalManagementPortal.Models.Notification>
+@{
+    ViewData["Title"] = "My Alerts";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="font-heading fw-bold mb-1">Notifications & System Alerts</h2>
+            <p class="text-secondary mb-0">Track updates about your registration, applications, and bookings.</p>
+        </div>
+    </div>
+
+    <div class="card glass-card border-0 p-4 shadow-sm">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-bell-slash fs-1 text-muted"></i>
+                <p class="text-secondary small mt-2">You don't have any notifications yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var alert in Model)
+                {
+                    <div class="list-group-item bg-transparent px-0 py-3 border-bottom d-flex justify-content-between align-items-center gap-3">
+                        <div class="d-flex gap-3 align-items-start">
+                            <span class="fs-4 @(alert.IsRead ? "text-muted" : "text-primary")">
+                                <i class="bi @(alert.IsRead ? "bi-bell" : "bi-bell-fill")"></i>
+                            </span>
+                            <div>
+                                <p class="mb-1 small @(alert.IsRead ? "text-secondary" : "text-dark fw-medium")">@alert.Message</p>
+                                <span class="text-muted" style="font-size: 0.75rem;">@alert.CreatedAt.ToString("g")</span>
+                            </div>
+                        </div>
+                        
+                        @if (!alert.IsRead)
+                        {
+                            <form asp-action="MarkAsRead" asp-route-id="@alert.Id" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-custom btn-sm rounded-pill px-3">Mark read</button>
+                            </form>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
