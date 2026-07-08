@@ -250,7 +250,8 @@ public class AccountController : Controller
                 Biography = model.Biography,
                 ExperienceYears = model.ExperienceYears,
                 Status = "Pending", // Explicitly pending admin approval
-                ProfilePicturePath = imagePath
+                ProfilePicturePath = imagePath,
+                ConsultationFee = model.ConsultationFee
             };
 
             _context.Users.Add(user);

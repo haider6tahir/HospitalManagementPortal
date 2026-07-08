@@ -58,10 +58,15 @@
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label asp-for="ProfileImage" class="form-label text-secondary fw-medium small"></label>
                             <input asp-for="ProfileImage" type="file" class="form-control form-control-custom" accept="image/*" />
                             <span asp-validation-for="ProfileImage" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ConsultationFee" class="form-label text-secondary fw-medium small"></label>
+                            <input asp-for="ConsultationFee" type="number" class="form-control form-control-custom" min="500" value="500" required />
+                            <span asp-validation-for="ConsultationFee" class="text-danger small"></span>
                         </div>
                     </div>
 

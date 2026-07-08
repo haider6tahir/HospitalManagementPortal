@@ -15,6 +15,13 @@
     </div>
 
     <div class="card glass-card border-0 p-4 shadow-sm">
+        @if (Model != null && Model.Any())
+        {
+            <div class="mb-3">
+                <input type="text" id="patientSearchInput" class="form-control form-control-custom w-100" placeholder="🔍 Search patients by name or email..." onkeyup="searchPatientsTable()" />
+            </div>
+        }
+
         @if (Model == null || !Model.Any())
         {
             <div class="text-center py-5">
@@ -64,9 +71,7 @@
                                     }
                                 </td>
                                 <td>
-                                    <div class="text-secondary small text-truncate" style="max-width: 350px;" title="@patient.MedicalHistorySummary">
-                                        @(string.IsNullOrEmpty(patient.MedicalHistorySummary) ? "No history recorded." : patient.MedicalHistorySummary)
-                                    </div>
+                                    <span class="text-muted small"><i class="bi bi-lock-fill text-danger me-1"></i>Protected Health Info</span>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-flex justify-content-end gap-2">
@@ -89,3 +94,20 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function searchPatientsTable() {
+            const input = document.getElementById('patientSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

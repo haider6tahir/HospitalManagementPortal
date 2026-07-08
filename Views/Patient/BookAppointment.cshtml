@@ -62,7 +62,10 @@
     <div class="row g-4">
         <!-- Doctors List Column -->
         <div class="col-lg-7">
-            <h5 class="font-heading fw-bold mb-3">Available Specialists</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h5 class="font-heading fw-bold mb-0">Available Specialists</h5>
+                <input type="text" id="doctorSearchInput" class="form-control form-control-custom w-50" placeholder="🔍 Search by name or specialty..." onkeyup="searchDoctors()" />
+            </div>
             
             @if (Model == null || !Model.Any())
             {
@@ -93,7 +96,7 @@
                                     </div>
                                     <div class="col-sm-7">
                                         <h5 class="font-heading fw-bold mb-1">Dr. @doc.User.FullName</h5>
-                                        <p class="text-secondary small mb-2">Qualifications: <strong>@doc.Qualifications</strong> | Exp: <strong>@doc.ExperienceYears years</strong></p>
+                                        <p class="text-secondary small mb-2">Qualifications: <strong>@doc.Qualifications</strong> | Exp: <strong>@doc.ExperienceYears yrs</strong> | Fee: <strong>Rs. @doc.ConsultationFee</strong></p>
                                         <span class="badge bg-teal-100 text-teal-800" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">@doc.Specialization</span>
                                         <p class="text-muted small mt-2 mb-0 text-truncate" style="max-width: 400px;" title="@doc.Biography">@doc.Biography</p>
                                     </div>
@@ -102,7 +105,7 @@
                                             <button type="button" class="btn btn-gradient-secondary btn-sm rounded-pill" onclick="checkSchedule(@doc.Id)">
                                                 <i class="bi bi-clock me-1"></i>Hours List
                                             </button>
-                                            <button type="button" class="btn btn-gradient btn-sm rounded-pill" onclick="selectDoctorForBooking(@doc.Id, '@doc.User.FullName', '@doc.Specialization')">
+                                            <button type="button" class="btn btn-gradient btn-sm rounded-pill" onclick="selectDoctorForBooking(@doc.Id, '@doc.User.FullName', '@doc.Specialization', @doc.ConsultationFee)">
                                                 Select
                                             </button>
                                         </div>
@@ -133,6 +136,7 @@
                         <div class="small text-secondary fw-semibold">SELECTED SPECIALIST</div>
                         <h6 class="fw-bold mb-0 text-primary mt-1" id="bookingDoctorName">Dr. Name</h6>
                         <span class="badge bg-teal-100 text-teal-800 mt-1" id="bookingDoctorSpecialty" style="background: rgba(13, 148, 136, 0.1); color: var(--primary-color);">Specialization</span>
+                        <div class="text-secondary small mt-1 fw-semibold" id="bookingDoctorFee">Fee: Rs. 500</div>
                     </div>
 
                     <div class="mb-3">
@@ -237,13 +241,14 @@
 
         let activeDoctorId = 0;
 
-        function selectDoctorForBooking(doctorId, doctorName, specialization) {
+        function selectDoctorForBooking(doctorId, doctorName, specialization, fee) {
             activeDoctorId = doctorId;
             document.getElementById('noDoctorSelectedAlert').style.display = 'none';
             
             document.getElementById('selectedDoctorId').value = doctorId;
             document.getElementById('bookingDoctorName').innerText = "Dr. " + doctorName;
             document.getElementById('bookingDoctorSpecialty').innerText = specialization;
+            document.getElementById('bookingDoctorFee').innerText = "Consultation Fee: Rs. " + fee;
             
             // Clear date picker and slots grid
             document.getElementById('appointmentDatePicker').value = '';
@@ -349,22 +354,32 @@
         });
 
         function selectSlot(button, time) {
-            // Remove selection from all active slot buttons
             document.querySelectorAll('.slot-btn').forEach(btn => {
                 btn.classList.remove('btn-primary', 'active');
                 btn.classList.add('btn-outline-success');
             });
 
-            // Mark clicked button as active
             button.classList.remove('btn-outline-success');
             button.classList.add('btn-primary', 'active');
 
-            // Set final date time value
             const date = document.getElementById('appointmentDatePicker').value;
             document.getElementById('finalAppointmentDate').value = `${date}T${time}`;
             
-            // Enable submit button
             document.getElementById('submitBookingBtn').disabled = false;
+        }
+
+        function searchDoctors() {
+            const input = document.getElementById('doctorSearchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.col-lg-7 .col-md-12');
+            cards.forEach(card => {
+                const name = card.querySelector('h5').innerText.toLowerCase();
+                const specialty = card.querySelector('.badge').innerText.toLowerCase();
+                if (name.includes(input) || specialty.includes(input)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
     </script>
 }

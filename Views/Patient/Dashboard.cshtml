@@ -209,6 +209,7 @@
                         </div>
                     </div>
                     <div class="modal-footer border-0 p-4 bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-4 me-2" onclick="printPrescription('Dr. @app.Doctor.User.FullName', '@app.Doctor.Specialization', '@app.Doctor.Qualifications', '@ViewBag.PatientName', '@app.Patient.DateOfBirth.ToString("dd MMM yyyy")', '@app.Patient.Gender', '@app.AppointmentDate.ToString("dd MMM yyyy, hh:mm tt")', '@(app.ConsultationNotes?.Replace("'", "\\'").Replace("\r\n", "\\n").Replace("\n", "\\n"))')"><i class="bi bi-printer me-1"></i>Print Prescription</button>
                         <button type="button" class="btn btn-gradient rounded-pill px-4" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -258,4 +259,67 @@
             </div>
         </div>
     }
+}
+
+@section Scripts {
+    <script>
+        function printPrescription(doctorName, specialty, qualifications, patientName, dob, gender, date, notes) {
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Clinical Prescription Slip</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Arial', sans-serif; padding: 40px; color: #333; }
+                        .letterhead { border-bottom: 3px double #06a3da; padding-bottom: 20px; margin-bottom: 30px; }
+                        .clinic-title { font-size: 28px; font-weight: bold; color: #06a3da; letter-spacing: 1px; }
+                        .meta-section { margin-bottom: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; }
+                        .notes-section { font-size: 16px; line-height: 1.6; white-space: pre-line; background: #fff; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; }
+                        .footer { border-top: 1px solid #dee2e6; margin-top: 50px; padding-top: 15px; font-size: 12px; color: #777; }
+                        @@media print {
+                            body { padding: 20px; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="letterhead d-flex justify-content-between align-items-center">
+                       <div>
+                           <div class="clinic-title">HOSPITAL CARE PORTAL</div>
+                           <div class="text-muted small">Modern Digital Consultation System</div>
+                       </div>
+                       <div class="text-end">
+                           <h5 class="mb-0 fw-bold">${doctorName}</h5>
+                           <div class="text-secondary small">${specialty} (${qualifications})</div>
+                       </div>
+                    </div>
+                    
+                    <div class="row meta-section">
+                       <div class="col-6 mb-2"><strong>Patient Name:</strong> ${patientName}</div>
+                       <div class="col-6 mb-2"><strong>Date:</strong> ${date}</div>
+                       <div class="col-6"><strong>Date of Birth:</strong> ${dob}</div>
+                       <div class="col-6"><strong>Gender:</strong> ${gender}</div>
+                    </div>
+                    
+                    <h5 class="fw-bold mb-3">Rx & Consultation Advice</h5>
+                    <div class="notes-section">${notes}</div>
+                    
+                    <div class="text-end" style="margin-top: 60px;">
+                       <div style="width: 200px; display: inline-block; border-bottom: 1px solid #333;"></div>
+                       <div class="small text-muted mt-1 me-4">Doctor's Authorized Signature</div>
+                    </div>
+                    
+                    <div class="footer text-center">
+                       This is a system-generated electronic prescription log registered via Hospital Care Portal.
+                    </div>
+                    <script>
+                       window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    </script>
 }

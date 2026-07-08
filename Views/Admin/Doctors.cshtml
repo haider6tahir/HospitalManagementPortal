@@ -15,6 +15,13 @@
     </div>
 
     <div class="card glass-card border-0 p-4 shadow-sm">
+        @if (Model != null && Model.Any())
+        {
+            <div class="mb-3">
+                <input type="text" id="doctorSearchInput" class="form-control form-control-custom w-100" placeholder="🔍 Search doctors by name, email, specialization, or qualifications..." onkeyup="searchDoctorsTable()" />
+            </div>
+        }
+
         @if (Model == null || !Model.Any())
         {
             <div class="text-center py-5">
@@ -32,6 +39,7 @@
                             <th>Specialization</th>
                             <th>Credentials</th>
                             <th>Experience</th>
+                            <th>Consultation Fee</th>
                             <th>Status</th>
                             <th class="text-end">Actions</th>
                         </tr>
@@ -72,6 +80,7 @@
                                     <div class="text-muted small text-truncate" style="max-width: 250px;" title="@doc.Biography">@doc.Biography</div>
                                 </td>
                                 <td>@doc.ExperienceYears years</td>
+                                <td><strong>Rs. @doc.ConsultationFee</strong></td>
                                 <td>
                                     <span class="badge @statusBadgeClass rounded-pill px-3 py-1.5 small">@doc.Status</span>
                                 </td>
@@ -96,3 +105,20 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function searchDoctorsTable() {
+            const input = document.getElementById('doctorSearchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(input)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

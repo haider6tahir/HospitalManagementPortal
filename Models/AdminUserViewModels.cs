@@ -44,6 +44,11 @@ public class AdminDoctorViewModel
     public IFormFile? ProfileImage { get; set; }
 
     public string? ExistingImagePath { get; set; }
+
+    [Required(ErrorMessage = "Consultation Fee is required.")]
+    [Range(500, 50000, ErrorMessage = "Consultation Fee must be at least Rs. 500.")]
+    [Display(Name = "Consultation Fee (Rs.)")]
+    public int ConsultationFee { get; set; } = 500;
 }
 
 public class AdminPatientViewModel

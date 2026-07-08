@@ -42,4 +42,9 @@ public class DoctorRegisterViewModel
 
     [Display(Name = "Profile Image")]
     public IFormFile? ProfileImage { get; set; }
+
+    [Required(ErrorMessage = "Consultation Fee is required.")]
+    [Range(500, 50000, ErrorMessage = "Consultation Fee must be at least Rs. 500.")]
+    [Display(Name = "Consultation Fee (Rs.)")]
+    public int ConsultationFee { get; set; } = 500;
 }

@@ -53,6 +53,7 @@ CREATE TABLE dbo.DoctorProfiles (
     Status NVARCHAR(50) NOT NULL DEFAULT 'Pending', -- 'Pending', 'Approved', 'Rejected'
     ExperienceYears INT NOT NULL DEFAULT 0,
     ProfilePicturePath NVARCHAR(500) NULL,
+    ConsultationFee INT NOT NULL DEFAULT 500,
     CONSTRAINT FK_DoctorProfiles_Users FOREIGN KEY (UserId) REFERENCES dbo.Users(Id) ON DELETE CASCADE
 );
 CREATE INDEX IX_DoctorProfiles_UserId ON dbo.DoctorProfiles(UserId);

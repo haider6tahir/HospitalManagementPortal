@@ -263,7 +263,8 @@ public class AdminController : Controller
             Biography = model.Biography,
             ExperienceYears = model.ExperienceYears,
             Status = model.Status,
-            ProfilePicturePath = imagePath
+            ProfilePicturePath = imagePath,
+            ConsultationFee = model.ConsultationFee
         };
 
         _context.Users.Add(user);
@@ -290,7 +291,8 @@ public class AdminController : Controller
             Biography = doc.Biography,
             ExperienceYears = doc.ExperienceYears,
             Status = doc.Status,
-            ExistingImagePath = doc.ProfilePicturePath
+            ExistingImagePath = doc.ProfilePicturePath,
+            ConsultationFee = doc.ConsultationFee
         };
 
         return View(model);
@@ -368,6 +370,7 @@ public class AdminController : Controller
         doc.Biography = model.Biography;
         doc.ExperienceYears = model.ExperienceYears;
         doc.Status = model.Status;
+        doc.ConsultationFee = model.ConsultationFee;
 
         await _context.SaveChangesAsync();
 

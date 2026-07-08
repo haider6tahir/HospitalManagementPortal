@@ -154,7 +154,11 @@
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small text-secondary fw-semibold">CONSULTATION NOTES & DIAGNOSIS</label>
-                                        <textarea name="notes" rows="6" class="form-control form-control-custom" placeholder="Write diagnosed symptoms, advice, and prescriptions here..." required>@app.ConsultationNotes</textarea>
+                                        <textarea id="notes-@app.Id" name="notes" rows="5" class="form-control form-control-custom notes-textarea" data-app-id="@app.Id" placeholder="Write diagnosed symptoms, advice, and prescriptions here..." required>@app.ConsultationNotes</textarea>
+                                        <div id="suggestions-@app.Id" class="mt-2 small d-none d-flex flex-wrap gap-1 align-items-center">
+                                            <span class="text-secondary me-1"><i class="bi bi-lightbulb-fill text-warning"></i> suggestions:</span>
+                                            <!-- Pills loaded dynamically -->
+                                        </div>
                                     </div>
                                 </div>
 
@@ -282,8 +286,62 @@
                         })
                         .catch(err => {
                             loadingDiv.innerHTML = `<span class="text-danger small">Failed to load medical history.</span>`;
-                            console.error(err);
                         });
+                });
+            });
+
+            // Listen to textarea typing for suggestions
+            const textareas = document.querySelectorAll('.notes-textarea');
+            textareas.forEach(textarea => {
+                textarea.addEventListener('input', function () {
+                    const appId = this.getAttribute('data-app-id');
+                    const text = this.value.toLowerCase();
+                    const suggestionsDiv = document.getElementById(`suggestions-${appId}`);
+                    
+                    suggestionsDiv.innerHTML = '<span class="text-secondary me-1"><i class="bi bi-lightbulb-fill text-warning"></i> Suggestions:</span>';
+                    
+                    const matches = [];
+
+                    const suggestionDatabase = [
+                        { keywords: ['heart', 'cardio', 'chest', 'bp'], text: 'Aspirin (75mg) OD, Atorvastatin (20mg) HS, Metoprolol (25mg) BD. Advice: Monitor blood pressure daily, restrict sodium intake.' },
+                        { keywords: ['fever', 'temp', 'body pain'], text: 'Paracetamol (500mg) TDS, Ibuprofen (400mg) SOS. Advice: Tepid sponging, bed rest, increase oral fluid intake.' },
+                        { keywords: ['stomach', 'gastric', 'pain', 'acid'], text: 'Omeprazole (20mg) BD before meals, Gaviscon syrup 10ml TDS. Advice: Avoid spicy/fatty food, take small frequent meals.' },
+                        { keywords: ['cough', 'flu', 'cold', 'throat'], text: 'Loratadine (10mg) OD, Cough Syrup 5ml TDS. Advice: Warm saline gargles, steam inhalation twice daily.' }
+                    ];
+
+                    suggestionDatabase.forEach(item => {
+                        let matched = false;
+                        item.keywords.forEach(keyword => {
+                            if (text.includes(keyword)) {
+                                matched = true;
+                            }
+                        });
+                        if (matched) {
+                            matches.push(item);
+                        }
+                    });
+
+                    if (matches.length > 0) {
+                        suggestionsDiv.classList.remove('d-none');
+                        matches.forEach(match => {
+                            const pill = document.createElement('button');
+                            pill.type = 'button';
+                            pill.className = 'btn btn-outline-info btn-xs py-0.5 px-2 rounded-pill small me-1';
+                            pill.style.fontSize = '0.75rem';
+                            pill.innerText = '+ Add ' + (match.keywords[0].toUpperCase() + ' Rx');
+                            pill.onclick = function() {
+                                if (textarea.value.trim() !== '') {
+                                    textarea.value += '\n\n' + match.text;
+                                } else {
+                                    textarea.value = match.text;
+                                }
+                                suggestionsDiv.classList.add('d-none');
+                            };
+                            suggestionsDiv.appendChild(pill);
+                        });
+                    } else {
+                        suggestionsDiv.classList.add('d-none');
+                    }
                 });
             });
         });

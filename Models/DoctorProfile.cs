@@ -13,6 +13,7 @@ public class DoctorProfile
     public string? ProfilePicturePath { get; set; }
     public string Status { get; set; } = "Pending"; // 'Pending', 'Approved', 'Rejected'
     public int ExperienceYears { get; set; }
+    public int ConsultationFee { get; set; } = 500;
 
     public virtual User User { get; set; } = null!;
     public virtual ICollection<Availability> Availabilities { get; set; } = new List<Availability>();
