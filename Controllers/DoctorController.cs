@@ -176,4 +176,39 @@ public class DoctorController : Controller
 
         return View(consultations);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetPatientHistory(int patientId)
+    {
+        var doc = await GetCurrentDoctorProfileAsync();
+        if (doc == null) return Unauthorized();
+
+        var patient = await _context.PatientProfiles
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Id == patientId);
+
+        if (patient == null) return NotFound();
+
+        var history = await _context.Appointments
+            .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .Where(a => a.PatientId == patientId && (a.Status == "Conducted" || !string.IsNullOrEmpty(a.ConsultationNotes)))
+            .OrderByDescending(a => a.AppointmentDate)
+            .Select(a => new {
+                date = a.AppointmentDate.ToString("dd MMM yyyy, hh:mm tt"),
+                doctorName = a.Doctor.User.FullName,
+                symptoms = a.SymptomDescription,
+                notes = a.ConsultationNotes,
+                prescriptionPath = a.PatientPrescriptionPath
+            })
+            .ToListAsync();
+
+        return Json(new {
+            fullName = patient.User.FullName,
+            bloodGroup = patient.BloodGroup,
+            gender = patient.Gender,
+            dob = patient.DateOfBirth.ToString("dd MMM yyyy"),
+            medicalHistory = patient.MedicalHistorySummary,
+            history = history
+        });
+    }
 }

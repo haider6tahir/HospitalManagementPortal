@@ -11,6 +11,7 @@ public class Appointment
     public string Status { get; set; } = "Pending"; // 'Pending', 'Approved', 'Rejected'
     public string? SymptomDescription { get; set; }
     public string? ConsultationNotes { get; set; }
+    public string? PatientPrescriptionPath { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public virtual PatientProfile Patient { get; set; } = null!;

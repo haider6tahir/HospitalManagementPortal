@@ -242,4 +242,96 @@ public class PatientController : Controller
 
         return RedirectToAction(nameof(Notifications));
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetBookedSlots(int doctorId, string date)
+    {
+        if (!DateTime.TryParse(date, out DateTime parsedDate))
+        {
+            return BadRequest("Invalid date format.");
+        }
+
+        var bookedTimes = await _context.Appointments
+            .Where(a => a.DoctorId == doctorId 
+                     && (a.Status == "Approved" || a.Status == "Conducted") 
+                     && a.AppointmentDate.Date == parsedDate.Date)
+            .Select(a => a.AppointmentDate.ToString("HH:mm"))
+            .ToListAsync();
+
+        int selectDayOfWeek = (int)parsedDate.DayOfWeek;
+        var shifts = await _context.Availabilities
+            .Where(a => a.DoctorId == doctorId && a.DayOfWeek == selectDayOfWeek)
+            .Select(a => new {
+                start = a.StartTime.ToString(@"hh\:mm"),
+                end = a.EndTime.ToString(@"hh\:mm")
+            })
+            .ToListAsync();
+
+        return Json(new {
+            bookedTimes = bookedTimes,
+            shifts = shifts
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadPrescription(int appointmentId, Microsoft.AspNetCore.Http.IFormFile prescriptionFile)
+    {
+        var patient = await GetCurrentPatientProfileAsync();
+        if (patient == null) return RedirectToAction("Login", "Account");
+
+        var appointment = await _context.Appointments
+            .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .FirstOrDefaultAsync(a => a.Id == appointmentId && a.PatientId == patient.Id);
+
+        if (appointment == null) return NotFound();
+
+        if (prescriptionFile != null && prescriptionFile.Length > 0)
+        {
+            var extension = System.IO.Path.GetExtension(prescriptionFile.FileName).ToLower();
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
+            if (!allowedExtensions.Contains(extension))
+            {
+                TempData["ErrorMessage"] = "Only JPG, PNG, or PDF files are allowed.";
+                return RedirectToAction(nameof(Dashboard));
+            }
+
+            var uploadDir = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "uploads", "prescriptions");
+            if (!System.IO.Directory.Exists(uploadDir))
+            {
+                System.IO.Directory.CreateDirectory(uploadDir);
+            }
+
+            var uniqueFileName = Guid.NewGuid().ToString() + extension;
+            var filePath = System.IO.Path.Combine(uploadDir, uniqueFileName);
+
+            using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            {
+                await prescriptionFile.CopyToAsync(stream);
+            }
+
+            if (!string.IsNullOrEmpty(appointment.PatientPrescriptionPath))
+            {
+                var oldPhysicalPath = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", appointment.PatientPrescriptionPath.TrimStart('/'));
+                if (System.IO.File.Exists(oldPhysicalPath))
+                {
+                    System.IO.File.Delete(oldPhysicalPath);
+                }
+            }
+
+            appointment.PatientPrescriptionPath = "/uploads/prescriptions/" + uniqueFileName;
+            await _context.SaveChangesAsync();
+
+            await _notificationService.SendNotificationAsync(appointment.Doctor.UserId, 
+                $"Patient {patient.User.FullName} uploaded a clinical report/prescription for your conducted appointment on {appointment.AppointmentDate:dd MMM yyyy}.");
+
+            TempData["SuccessMessage"] = "Prescription report uploaded successfully!";
+        }
+        else
+        {
+            TempData["ErrorMessage"] = "Please select a valid file to upload.";
+        }
+
+        return RedirectToAction(nameof(Dashboard));
+    }
 }

@@ -136,9 +136,24 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary small fw-medium">Appointment Date & Time</label>
-                        <input name="appointmentDate" type="datetime-local" class="form-control form-control-custom" min="@(((DateTime?)ViewBag.PatientLocalTime ?? DateTime.Now).ToString("yyyy-MM-ddTHH:mm"))" required />
-                        <span class="text-muted small" style="font-size: 0.8rem;">Please schedule matching the doctor's weekly active hours.</span>
+                        <label class="form-label text-secondary small fw-medium">Appointment Date</label>
+                        <input type="date" id="appointmentDatePicker" class="form-control form-control-custom" min="@(((DateTime?)ViewBag.PatientLocalTime ?? DateTime.Now).ToString("yyyy-MM-dd"))" required />
+                        <input type="hidden" id="finalAppointmentDate" name="appointmentDate" required />
+                    </div>
+
+                    <!-- Interactive Timeslots Grid -->
+                    <div class="mb-3" id="slotsSection" style="display: none;">
+                        <label class="form-label text-secondary small fw-medium d-block">Select Available Time Slot</label>
+                        <div id="slotsLegend" class="d-flex flex-wrap gap-2 mb-3 small">
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-success" style="width: 10px; height: 10px; display: inline-block;">&nbsp;</span> Free</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-danger" style="width: 10px; height: 10px; display: inline-block;">&nbsp;</span> Booked</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-warning text-dark" style="width: 10px; height: 10px; display: inline-block;">&nbsp;</span> Break</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-secondary" style="width: 10px; height: 10px; display: inline-block;">&nbsp;</span> Closed</span>
+                            <span class="d-flex align-items-center gap-1"><span class="badge bg-primary" style="width: 10px; height: 10px; display: inline-block;">&nbsp;</span> Select</span>
+                        </div>
+                        <div id="slotsGrid" class="row g-2" style="max-height: 250px; overflow-y: auto; padding: 5px;">
+                            <!-- Rendered dynamically -->
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -146,7 +161,7 @@
                         <textarea name="symptoms" rows="4" class="form-control form-control-custom" placeholder="Briefly describe your symptoms or reason for consulting the doctor..." required></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-gradient w-100 py-2.5">
+                    <button type="submit" id="submitBookingBtn" class="btn btn-gradient w-100 py-2.5" disabled>
                         <i class="bi bi-check-circle me-2"></i>Confirm Booking Request
                     </button>
                 </form>
@@ -220,19 +235,136 @@
                 });
         }
 
+        let activeDoctorId = 0;
+
         function selectDoctorForBooking(doctorId, doctorName, specialization) {
+            activeDoctorId = doctorId;
             document.getElementById('noDoctorSelectedAlert').style.display = 'none';
             
             document.getElementById('selectedDoctorId').value = doctorId;
             document.getElementById('bookingDoctorName').innerText = "Dr. " + doctorName;
             document.getElementById('bookingDoctorSpecialty').innerText = specialization;
             
+            // Clear date picker and slots grid
+            document.getElementById('appointmentDatePicker').value = '';
+            document.getElementById('finalAppointmentDate').value = '';
+            document.getElementById('slotsSection').style.display = 'none';
+            document.getElementById('submitBookingBtn').disabled = true;
+
             document.getElementById('bookingForm').style.display = 'block';
             
             // Scroll to form on mobile devices
             if (window.innerWidth < 992) {
                 document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
             }
+        }
+
+        // Add event listener to Date Picker
+        document.getElementById('appointmentDatePicker').addEventListener('change', function () {
+            const selectedDate = this.value;
+            if (!selectedDate || activeDoctorId === 0) return;
+
+            fetch(`/Patient/GetBookedSlots?doctorId=${activeDoctorId}&date=${selectedDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    const bookedTimes = data.bookedTimes; 
+                    const shifts = data.shifts; 
+                    
+                    const slotsGrid = document.getElementById('slotsGrid');
+                    slotsGrid.innerHTML = '';
+                    document.getElementById('slotsSection').style.display = 'block';
+                    document.getElementById('finalAppointmentDate').value = '';
+                    document.getElementById('submitBookingBtn').disabled = true;
+
+                    // The 30 standard timeslots
+                    const staticSlots = [
+                        "08:00", "08:20", "08:40", 
+                        "09:00", "09:20", "09:40", 
+                        "10:00", "10:20", "10:40", 
+                        "11:00", "11:20", "11:40", 
+                        "12:00", "12:20", "12:40", 
+                        "13:00", "13:20", "13:40", 
+                        "14:00", "14:20", "14:40", 
+                        "15:00", "15:20", "15:40", 
+                        "16:00", "16:20", "16:40", 
+                        "17:00", "17:20", "17:40"
+                    ];
+
+                    staticSlots.forEach(slot => {
+                        let status = "available"; 
+                        
+                        // Check if it's a Break (13:00 to 14:00)
+                        if (slot === "13:00" || slot === "13:20" || slot === "13:40") {
+                            status = "break";
+                        }
+                        // Check if it's outside doctor's active shift
+                        else {
+                            let inShift = false;
+                            shifts.forEach(shift => {
+                                if (slot >= shift.start && slot <= shift.end) {
+                                    inShift = true;
+                                }
+                            });
+                            if (!inShift) {
+                                status = "closed";
+                            }
+                        }
+
+                        // Check if it's already booked
+                        if (status === "available" && bookedTimes.includes(slot)) {
+                            status = "booked";
+                        }
+
+                        // Render slot button
+                        const col = document.createElement('div');
+                        col.className = 'col-md-4 col-6';
+                        
+                        let btnClass = "";
+                        let disabledAttr = "";
+                        let label = slot;
+
+                        if (status === "break") {
+                            btnClass = "btn-warning text-dark disabled opacity-75";
+                            disabledAttr = "disabled";
+                            label += " (Break)";
+                        } else if (status === "closed") {
+                            btnClass = "btn-secondary disabled opacity-25";
+                            disabledAttr = "disabled";
+                            label += " (Closed)";
+                        } else if (status === "booked") {
+                            btnClass = "btn-danger disabled opacity-50";
+                            disabledAttr = "disabled";
+                            label += " (Booked)";
+                        } else {
+                            btnClass = "btn-outline-success slot-btn";
+                        }
+
+                        col.innerHTML = `<button type="button" class="btn ${btnClass} btn-sm w-100 py-2.5 rounded-10" ${disabledAttr} onclick="selectSlot(this, '${slot}')">${label}</button>`;
+                        slotsGrid.appendChild(col);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading timeslots:', error);
+                });
+        });
+
+        function selectSlot(button, time) {
+            // Remove selection from all active slot buttons
+            document.querySelectorAll('.slot-btn').forEach(btn => {
+                btn.classList.remove('btn-primary', 'active');
+                btn.classList.add('btn-outline-success');
+            });
+
+            // Mark clicked button as active
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-primary', 'active');
+
+            // Set final date time value
+            const date = document.getElementById('appointmentDatePicker').value;
+            document.getElementById('finalAppointmentDate').value = `${date}T${time}`;
+            
+            // Enable submit button
+            document.getElementById('submitBookingBtn').disabled = false;
         }
     </script>
 }

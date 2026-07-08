@@ -93,6 +93,7 @@ CREATE TABLE dbo.Appointments (
     Status NVARCHAR(50) NOT NULL DEFAULT 'Pending', -- 'Pending', 'Approved', 'Rejected'
     SymptomDescription NVARCHAR(MAX) NULL,
     ConsultationNotes NVARCHAR(MAX) NULL,
+    PatientPrescriptionPath NVARCHAR(500) NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     CONSTRAINT FK_Appointments_Patients FOREIGN KEY (PatientId) REFERENCES dbo.PatientProfiles(Id),
     CONSTRAINT FK_Appointments_Doctors FOREIGN KEY (DoctorId) REFERENCES dbo.DoctorProfiles(Id) ON DELETE CASCADE
