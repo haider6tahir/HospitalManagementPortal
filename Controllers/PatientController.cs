@@ -334,4 +334,27 @@ public class PatientController : Controller
 
         return RedirectToAction(nameof(Dashboard));
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAppointmentsJson()
+    {
+        var patient = await GetCurrentPatientProfileAsync();
+        if (patient == null) return Unauthorized();
+
+        var appointments = await _context.Appointments
+            .Include(a => a.Doctor).ThenInclude(d => d.User)
+            .Where(a => a.PatientId == patient.Id && a.Status == "Approved")
+            .ToListAsync();
+
+        var events = appointments.Select(a => new
+        {
+            id = a.Id,
+            title = $"Appointment: Dr. {a.Doctor.User.FullName}",
+            start = a.AppointmentDate.ToString("yyyy-MM-ddTHH:mm:ss"),
+            end = a.AppointmentDate.AddMinutes(20).ToString("yyyy-MM-ddTHH:mm:ss"),
+            className = "border-start border-success border-3"
+        });
+
+        return Json(events);
+    }
 }

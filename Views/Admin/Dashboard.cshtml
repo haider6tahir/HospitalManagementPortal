@@ -84,7 +84,7 @@
     <div class="row g-4 mb-5">
         <div class="col-lg-8">
             <div class="card glass-card border-0 p-4 shadow-sm h-100">
-                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-graph-up me-2"></i>System Operations Summary</h5>
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-graph-up me-2"></i>7-Day Appointment Trends</h5>
                 <div style="height: 300px; position: relative;">
                     <canvas id="systemChart"></canvas>
                 </div>
@@ -259,58 +259,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Data variables passed from controller ViewBags
-            const totalPatients = @ViewBag.TotalPatients;
-            const totalDoctors = @ViewBag.TotalDoctors;
-            const pendingDoctors = @ViewBag.PendingDoctorApprovals;
-            const todayAppointments = @ViewBag.TodayAppointments;
-            
             const pendingAppts = @ViewBag.PendingAppointmentsCount;
             const approvedAppts = @ViewBag.ApprovedAppointmentsCount;
             const rejectedAppts = @ViewBag.RejectedAppointmentsCount;
-
-            // System Chart
-            const ctxSystem = document.getElementById('systemChart').getContext('2d');
-            new Chart(ctxSystem, {
-                type: 'bar',
-                data: {
-                    labels: ['Registered Patients', 'Approved Doctors', 'Pending Doctors', 'Today\'s Agenda'],
-                    datasets: [{
-                        label: 'Counts',
-                        data: [totalPatients, totalDoctors, pendingDoctors, todayAppointments],
-                        backgroundColor: [
-                            'rgba(13, 148, 136, 0.7)',
-                            'rgba(6, 182, 212, 0.7)',
-                            'rgba(244, 63, 94, 0.7)',
-                            'rgba(139, 92, 246, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgb(13, 148, 136)',
-                            'rgb(6, 182, 212)',
-                            'rgb(244, 63, 94)',
-                            'rgb(139, 92, 246)'
-                        ],
-                        borderWidth: 1.5,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.05)' }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    }
-                }
-            });
 
             // Appointments Doughnut Chart
             const ctxAppts = document.getElementById('appointmentsPieChart').getContext('2d');
@@ -340,6 +291,50 @@
                     cutout: '65%'
                 }
             });
+
+            // Fetch Trend data via AJAX
+            fetch('/Admin/GetDashboardStats')
+                .then(response => response.json())
+                .then(data => {
+                    const trendLabels = data.trend.map(t => t.date);
+                    const trendValues = data.trend.map(t => t.count);
+
+                    const ctxSystem = document.getElementById('systemChart').getContext('2d');
+                    new Chart(ctxSystem, {
+                        type: 'line',
+                        data: {
+                            labels: trendLabels,
+                            datasets: [{
+                                label: 'Daily Booked Appointments',
+                                data: trendValues,
+                                borderColor: 'rgba(139, 92, 246, 1)',
+                                backgroundColor: 'rgba(139, 92, 246, 0.15)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(139, 92, 246, 1)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 },
+                                    grid: { color: 'rgba(0,0,0,0.05)' }
+                                },
+                                x: {
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(err => console.error('Error loading charts data:', err));
         });
     </script>
 }

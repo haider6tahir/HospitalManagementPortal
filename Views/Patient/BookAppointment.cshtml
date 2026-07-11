@@ -264,6 +264,16 @@
             }
         }
 
+        // Helper function to format 24-hour time to 12-hour AM/PM
+        function formatTime12Hour(time24) {
+            const [hourStr, minStr] = time24.split(':');
+            let hour = parseInt(hourStr, 10);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12;
+            hour = hour ? hour : 12; // if hour is 0, make it 12
+            return `${hour}:${minStr} ${ampm}`;
+        }
+
         // Add event listener to Date Picker
         document.getElementById('appointmentDatePicker').addEventListener('change', function () {
             const selectedDate = this.value;
@@ -281,7 +291,7 @@
                     document.getElementById('finalAppointmentDate').value = '';
                     document.getElementById('submitBookingBtn').disabled = true;
 
-                    // The 30 standard timeslots
+                    // Standard timeslots extending through the evening
                     const staticSlots = [
                         "08:00", "08:20", "08:40", 
                         "09:00", "09:20", "09:40", 
@@ -292,7 +302,11 @@
                         "14:00", "14:20", "14:40", 
                         "15:00", "15:20", "15:40", 
                         "16:00", "16:20", "16:40", 
-                        "17:00", "17:20", "17:40"
+                        "17:00", "17:20", "17:40",
+                        "18:00", "18:20", "18:40",
+                        "19:00", "19:20", "19:40",
+                        "20:00", "20:20", "20:40",
+                        "21:00", "21:20", "21:40"
                     ];
 
                     staticSlots.forEach(slot => {
@@ -320,13 +334,26 @@
                             status = "booked";
                         }
 
+                        // Check if it's in the past (only if selected date is today)
+                        if (status === "available") {
+                            const now = new Date();
+                            const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                            if (selectedDate === todayStr) {
+                                const currentTimeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+                                if (slot <= currentTimeStr) {
+                                    status = "closed"; // Past slots are closed
+                                }
+                            }
+                        }
+
                         // Render slot button
                         const col = document.createElement('div');
                         col.className = 'col-md-4 col-6';
                         
                         let btnClass = "";
                         let disabledAttr = "";
-                        let label = slot;
+                        let timeLabel = formatTime12Hour(slot);
+                        let label = timeLabel;
 
                         if (status === "break") {
                             btnClass = "btn-warning text-dark disabled opacity-75";

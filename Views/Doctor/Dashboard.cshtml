@@ -42,7 +42,23 @@
         </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Dashboard Tabs -->
+    <ul class="nav nav-pills custom-tabs mb-4" id="doctorDashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4" id="agenda-tab" data-bs-toggle="tab" data-bs-target="#agenda-pane" type="button" role="tab" aria-controls="agenda-pane" aria-selected="true"><i class="bi bi-calendar3 me-2"></i>My Agenda</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 ms-2" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics-pane" type="button" role="tab" aria-controls="analytics-pane" aria-selected="false" onclick="loadDoctorAnalytics()"><i class="bi bi-graph-up me-2"></i>Analytics & Trends</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 ms-2" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-pane" type="button" role="tab" aria-controls="calendar-pane" aria-selected="false" onclick="loadDoctorCalendar()"><i class="bi bi-calendar-week me-2"></i>Schedule Calendar</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="doctorDashboardTabsContent">
+        <!-- Tab 1: Agenda -->
+        <div class="tab-pane fade show active" id="agenda-pane" role="tabpanel" aria-labelledby="agenda-tab">
+            <div class="row g-4">
         <!-- Today's Appointments -->
         <div class="col-lg-7">
             <div class="card glass-card border-0 p-4 shadow-sm h-100">
@@ -122,7 +138,39 @@
                 }
             </div>
         </div>
-    </div>
+            </div> <!-- End of original row -->
+        </div> <!-- End of Tab 1: Agenda -->
+
+        <!-- Tab 2: Analytics -->
+        <div class="tab-pane fade" id="analytics-pane" role="tabpanel" aria-labelledby="analytics-tab">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card glass-card border-0 p-4 shadow-sm">
+                        <h5 class="font-heading fw-bold mb-3"><i class="bi bi-graph-up text-primary me-2"></i>7-Day Patient Volume Trend</h5>
+                        <div style="height: 320px; position: relative;">
+                            <canvas id="doctorTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card glass-card border-0 p-4 shadow-sm">
+                        <h5 class="font-heading fw-bold mb-3"><i class="bi bi-pie-chart text-accent me-2"></i>Appointment Status Distribution</h5>
+                        <div style="height: 320px; position: relative;">
+                            <canvas id="doctorStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Calendar -->
+        <div class="tab-pane fade" id="calendar-pane" role="tabpanel" aria-labelledby="calendar-tab">
+            <div class="card glass-card border-0 p-4 shadow-sm">
+                <h5 class="font-heading fw-bold mb-3"><i class="bi bi-calendar-week text-primary me-2"></i>Interactive Schedule Calendar</h5>
+                <div id="doctorCalendar" class="p-2 bg-white rounded-3 shadow-xs border"></div>
+            </div>
+        </div>
+    </div> <!-- End of Tab Content -->
 </div>
 
 @if (todayAppointments != null && todayAppointments.Any())
@@ -204,6 +252,9 @@
 </div>
 
 @section Scripts {
+    <!-- Script libraries for charts and calendar -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const modals = document.querySelectorAll('[id^="consultNotesModal-"]');
@@ -303,10 +354,52 @@
                     const matches = [];
 
                     const suggestionDatabase = [
-                        { keywords: ['heart', 'cardio', 'chest', 'bp'], text: 'Aspirin (75mg) OD, Atorvastatin (20mg) HS, Metoprolol (25mg) BD. Advice: Monitor blood pressure daily, restrict sodium intake.' },
-                        { keywords: ['fever', 'temp', 'body pain'], text: 'Paracetamol (500mg) TDS, Ibuprofen (400mg) SOS. Advice: Tepid sponging, bed rest, increase oral fluid intake.' },
-                        { keywords: ['stomach', 'gastric', 'pain', 'acid'], text: 'Omeprazole (20mg) BD before meals, Gaviscon syrup 10ml TDS. Advice: Avoid spicy/fatty food, take small frequent meals.' },
-                        { keywords: ['cough', 'flu', 'cold', 'throat'], text: 'Loratadine (10mg) OD, Cough Syrup 5ml TDS. Advice: Warm saline gargles, steam inhalation twice daily.' }
+                        { 
+                            category: 'Heart',
+                            keywords: ['heart', 'cardio', 'chest', 'bp', 'hypertension'],
+                            medicines: [
+                                { name: 'Aspirin 75mg OD', text: 'Aspirin (75mg) - 1 tab daily after food.' },
+                                { name: 'Atorvastatin 20mg HS', text: 'Atorvastatin (20mg) - 1 tab daily at night.' },
+                                { name: 'Metoprolol 25mg BD', text: 'Metoprolol (25mg) - 1 tab twice daily.' }
+                            ],
+                            advice: 'Advice: Monitor blood pressure daily, restrict sodium intake.'
+                        },
+                        {
+                            category: 'Fever',
+                            keywords: ['fever', 'temp', 'body pain', 'headache'],
+                            medicines: [
+                                { name: 'Paracetamol 500mg TDS', text: 'Paracetamol (500mg) - 1 tab thrice daily.' },
+                                { name: 'Ibuprofen 400mg SOS', text: 'Ibuprofen (400mg) - 1 tab as needed for severe pain/fever.' }
+                            ],
+                            advice: 'Advice: Tepid sponging, bed rest, increase oral fluid intake.'
+                        },
+                        {
+                            category: 'Stomach',
+                            keywords: ['stomach', 'gastric', 'pain', 'acid', 'diarrhea'],
+                            medicines: [
+                                { name: 'Omeprazole 20mg BD', text: 'Omeprazole (20mg) - 1 cap twice daily before meals.' },
+                                { name: 'Gaviscon Syrup 10ml TDS', text: 'Gaviscon Syrup - 10ml thrice daily after meals.' }
+                            ],
+                            advice: 'Advice: Avoid spicy/fatty food, take small frequent meals.'
+                        },
+                        {
+                            category: 'Cough/Cold',
+                            keywords: ['cough', 'flu', 'cold', 'throat', 'coughing'],
+                            medicines: [
+                                { name: 'Loratadine 10mg OD', text: 'Loratadine (10mg) - 1 tab daily at night.' },
+                                { name: 'Cough Syrup 5ml TDS', text: 'Cough Syrup - 5ml thrice daily.' }
+                            ],
+                            advice: 'Advice: Warm saline gargles, steam inhalation twice daily.'
+                        },
+                        {
+                            category: 'Diabetes',
+                            keywords: ['sugar', 'diabetes', 'diabetic', 'glucose'],
+                            medicines: [
+                                { name: 'Metformin 500mg BD', text: 'Metformin (500mg) - 1 tab twice daily with meals.' },
+                                { name: 'Glimepiride 1mg OD', text: 'Glimepiride (1mg) - 1 tab daily before breakfast.' }
+                            ],
+                            advice: 'Advice: Restrict sugar, walk 30 mins daily, monitor blood glucose.'
+                        }
                     ];
 
                     suggestionDatabase.forEach(item => {
@@ -324,20 +417,39 @@
                     if (matches.length > 0) {
                         suggestionsDiv.classList.remove('d-none');
                         matches.forEach(match => {
-                            const pill = document.createElement('button');
-                            pill.type = 'button';
-                            pill.className = 'btn btn-outline-info btn-xs py-0.5 px-2 rounded-pill small me-1';
-                            pill.style.fontSize = '0.75rem';
-                            pill.innerText = '+ Add ' + (match.keywords[0].toUpperCase() + ' Rx');
-                            pill.onclick = function() {
-                                if (textarea.value.trim() !== '') {
-                                    textarea.value += '\n\n' + match.text;
-                                } else {
-                                    textarea.value = match.text;
-                                }
-                                suggestionsDiv.classList.add('d-none');
+                            // Category label
+                            const label = document.createElement('span');
+                            label.className = 'badge bg-teal-100 text-teal-800 me-1 mb-1';
+                            label.style.background = 'rgba(13, 148, 136, 0.1)';
+                            label.style.color = 'var(--primary-color)';
+                            label.innerText = match.category;
+                            suggestionsDiv.appendChild(label);
+
+                            // Med pills
+                            match.medicines.forEach(med => {
+                                const pill = document.createElement('button');
+                                pill.type = 'button';
+                                pill.className = 'btn btn-outline-info btn-xs py-0.5 px-2 rounded-pill small me-1 mb-1';
+                                pill.style.fontSize = '0.75rem';
+                                pill.innerText = '+ ' + med.name;
+                                pill.onclick = function() {
+                                    const separator = textarea.value.trim() !== '' ? '\n' : '';
+                                    textarea.value += separator + med.text;
+                                };
+                                suggestionsDiv.appendChild(pill);
+                            });
+
+                            // Advice pill
+                            const advicePill = document.createElement('button');
+                            advicePill.type = 'button';
+                            advicePill.className = 'btn btn-outline-secondary btn-xs py-0.5 px-2 rounded-pill small me-1 mb-1';
+                            advicePill.style.fontSize = '0.75rem';
+                            advicePill.innerText = '+ ' + match.advice.split(':')[0];
+                            advicePill.onclick = function() {
+                                const separator = textarea.value.trim() !== '' ? '\n' : '';
+                                textarea.value += separator + match.advice;
                             };
-                            suggestionsDiv.appendChild(pill);
+                            suggestionsDiv.appendChild(advicePill);
                         });
                     } else {
                         suggestionsDiv.classList.add('d-none');
@@ -350,6 +462,108 @@
             document.getElementById('zoomedReportImg').src = path;
             const modal = new bootstrap.Modal(document.getElementById('reportZoomModal'));
             modal.show();
+        }
+
+        let doctorTrendChartInstance = null;
+        let doctorStatusChartInstance = null;
+
+        function loadDoctorAnalytics() {
+            fetch('/Doctor/GetDashboardStats')
+                .then(response => response.json())
+                .then(data => {
+                    const trendLabels = data.weeklyTrend.map(t => t.date);
+                    const trendValues = data.weeklyTrend.map(t => t.count);
+
+                    if (doctorTrendChartInstance) doctorTrendChartInstance.destroy();
+                    if (doctorStatusChartInstance) doctorStatusChartInstance.destroy();
+
+                    const ctxTrend = document.getElementById('doctorTrendChart').getContext('2d');
+                    doctorTrendChartInstance = new Chart(ctxTrend, {
+                        type: 'line',
+                        data: {
+                            labels: trendLabels,
+                            datasets: [{
+                                label: 'Patients Consulted',
+                                data: trendValues,
+                                borderColor: 'rgba(6, 182, 212, 1)',
+                                backgroundColor: 'rgba(6, 182, 212, 0.15)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(6, 182, 212, 1)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                            }
+                        }
+                    });
+
+                    const ctxStatus = document.getElementById('doctorStatusChart').getContext('2d');
+                    doctorStatusChartInstance = new Chart(ctxStatus, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Pending', 'Approved', 'Conducted', 'Rejected'],
+                            datasets: [{
+                                data: [data.stats.pending, data.stats.approved, data.stats.conducted, data.stats.rejected],
+                                backgroundColor: [
+                                    'rgba(245, 158, 11, 0.75)',
+                                    'rgba(59, 130, 246, 0.75)',
+                                    'rgba(16, 185, 129, 0.75)',
+                                    'rgba(239, 68, 68, 0.75)'
+                                ],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } }
+                            },
+                            cutout: '60%'
+                        }
+                    });
+                })
+                .catch(err => console.error('Error fetching doctor stats:', err));
+        }
+
+        let doctorCalendarInstance = null;
+
+        function loadDoctorCalendar() {
+            setTimeout(() => {
+                const calendarEl = document.getElementById('doctorCalendar');
+                if (doctorCalendarInstance) {
+                    doctorCalendarInstance.refetchEvents();
+                    doctorCalendarInstance.render();
+                    return;
+                }
+
+                doctorCalendarInstance = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: '/Doctor/GetAppointmentsJson',
+                    eventClick: function(info) {
+                        const appId = info.event.id;
+                        const modalEl = document.getElementById(`consultNotesModal-${appId}`);
+                        if (modalEl) {
+                            const modal = new bootstrap.Modal(modalEl);
+                            modal.show();
+                        } else {
+                            alert("Appointment Details: " + info.event.title + " at " + info.event.start.toLocaleString());
+                        }
+                    }
+                });
+                doctorCalendarInstance.render();
+            }, 200);
         }
     </script>
 }

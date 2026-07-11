@@ -211,4 +211,58 @@ public class DoctorController : Controller
             history = history
         });
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var doc = await GetCurrentDoctorProfileAsync();
+        if (doc == null) return Unauthorized();
+
+        var appointments = await _context.Appointments
+            .Where(a => a.DoctorId == doc.Id)
+            .ToListAsync();
+
+        var stats = new
+        {
+            pending = appointments.Count(a => a.Status == "Pending"),
+            approved = appointments.Count(a => a.Status == "Approved"),
+            rejected = appointments.Count(a => a.Status == "Rejected"),
+            conducted = appointments.Count(a => a.Status == "Conducted" || !string.IsNullOrEmpty(a.ConsultationNotes))
+        };
+
+        var sevenDaysAgo = DateTime.Today.AddDays(-6);
+        var weeklyTrend = Enumerable.Range(0, 7)
+            .Select(i => sevenDaysAgo.AddDays(i))
+            .Select(date => new
+            {
+                Date = date.ToString("dd MMM"),
+                Count = appointments.Count(a => a.AppointmentDate.Date == date.Date)
+            })
+            .ToList();
+
+        return Json(new { stats, weeklyTrend });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAppointmentsJson()
+    {
+        var doc = await GetCurrentDoctorProfileAsync();
+        if (doc == null) return Unauthorized();
+
+        var appointments = await _context.Appointments
+            .Include(a => a.Patient).ThenInclude(p => p.User)
+            .Where(a => a.DoctorId == doc.Id && a.Status == "Approved")
+            .ToListAsync();
+
+        var events = appointments.Select(a => new
+        {
+            id = a.Id,
+            title = $"Consult: {a.Patient.User.FullName}",
+            start = a.AppointmentDate.ToString("yyyy-MM-ddTHH:mm:ss"),
+            end = a.AppointmentDate.AddMinutes(20).ToString("yyyy-MM-ddTHH:mm:ss"),
+            className = "border-start border-primary border-3"
+        });
+
+        return Json(events);
+    }
 }

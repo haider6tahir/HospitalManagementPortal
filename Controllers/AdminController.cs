@@ -535,4 +535,30 @@ public class AdminController : Controller
         TempData["SuccessMessage"] = $"Patient account deleted successfully.";
         return RedirectToAction(nameof(Patients));
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDashboardStats()
+    {
+        var specialties = await _context.Appointments
+            .Include(a => a.Doctor)
+            .GroupBy(a => a.Doctor.Specialization)
+            .Select(g => new { Specialization = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        var sevenDaysAgo = DateTime.Today.AddDays(-6);
+        var appointments = await _context.Appointments
+            .Where(a => a.AppointmentDate >= sevenDaysAgo)
+            .ToListAsync();
+
+        var trend = Enumerable.Range(0, 7)
+            .Select(i => sevenDaysAgo.AddDays(i))
+            .Select(date => new
+            {
+                Date = date.ToString("dd MMM"),
+                Count = appointments.Count(a => a.AppointmentDate.Date == date.Date)
+            })
+            .ToList();
+
+        return Json(new { specialties, trend });
+    }
 }
